@@ -25,6 +25,8 @@ class DictDiffer(object):
     (2) items removed
     (3) keys same in both but changed values
     (4) keys same in both and unchanged values
+
+    Author: https://stackoverflow.com/users/10293/hughdbrown
     
     Sample output:
     >>> a = {'a': 1, 'b': 1, 'c': 0}
