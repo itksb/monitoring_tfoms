@@ -219,7 +219,7 @@ def main():
         debug("Сообщение: %s" % message)
     else:
         warning("База мониторинга пустая. Это первый запуск?")
-        telegram_bot_sendtext(args.t, args.i, "База мониторинга пустая") 
+        telegram_bot_sendtext(args.t, args.i, "База мониторинга пустая. Возможно первый запуск?") 
 
     if (message):
         info("Сообщение: " + message) 
