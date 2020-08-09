@@ -6,7 +6,11 @@
 #  /usr/bin/python3 cron.py \
 # -u https://ttfoms.em70.ru/page/resheniya_komissii_po_razrabotke_territorialnoy_programmy_oms_v_tomskoy_oblasti \
 # -s class=\"page\" -e class=\"footer__metrika\" \
-# -v 3 -d "ttfoms.em70.ru" -t telegram-bot-token -i -bot-chat-id
+# -v 3 -d "ttfoms.em70.ru" -t telegram-bot-token -i -bot-chat-id \
+# -logfile `pwd`/cron.log \
+# -dbfile `pwd`/cron.db
+# crontab example:
+# 0 * * * *    /usr/bin/python3 /home/ksb/WebProjects/site_tfoms_monitoring/cron.py -u https://ttfoms.em70.ru/page/resheniya_komissii_po_razrabotke_territorialnoy_programmy_oms_v_tomskoy_oblasti -s class=\"page\" -e class=\"footer__metrika\" -v 3 -d "ttfoms.em70.ru" -t 1000843435:AAHiXABxF4uloK70gSzjsRwotw7yBHPU-5g -i -441527662  -logfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.log -dbfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.db  
 
 import sys
 import logging
@@ -174,7 +178,15 @@ def parse_arguments():
     parser.add_argument('-e', metavar='endHtml', type=str, required=True, help='End html part')
     parser.add_argument('-d', metavar='domain', type=str, required=True, help="Site domain")    
     parser.add_argument('-t', metavar='bot_token', type=str, required=True, help="Telegram bot token")    
-    parser.add_argument('-i', metavar='bot_chatID', type=str, required=True, help="Telegram bot chat ID")    
+    parser.add_argument('-i', metavar='bot_chatID', type=str, required=True, help="Telegram bot chat ID")  
+    parser.add_argument(
+        '-logfile', metavar='logfilepath', type=str, default='', 
+        required=False, help="Path to file where write the log."
+    )   
+    parser.add_argument(
+        '-dbfile', metavar='dbfilepath', type=str, 
+        required=True, help="Path to the db file."
+    )   
     
     args = parser.parse_args()
     return args
@@ -182,7 +194,11 @@ def parse_arguments():
 
 def main():
     verbose = {0: logging.CRITICAL, 1: logging.ERROR, 2: logging.WARNING, 3: logging.INFO, 4: logging.DEBUG}
-    logging.basicConfig(format='%(message)s', level=verbose[args.v], stream=sys.stdout)
+    if args.logfile:
+        logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=verbose[args.v], filename=args.logfile)
+    else:
+        logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=verbose[args.v], stream=sys.stdout)
+    
     
     info("Старт мониторинга изменений страницы сайта Фонда")
 
@@ -196,8 +212,8 @@ def main():
     
 
     message = ""
-    if is_diff_calculation_needed('cron.db'):
-        prev_link_digests = retreive_prev_digests_if_exists('cron.db')
+    if is_diff_calculation_needed(args.dbfile):
+        prev_link_digests = retreive_prev_digests_if_exists(args.dbfile)
         diffObject = DictDiffer( resources_link_digests, prev_link_digests)
         message = create_notification_msg(diffObject)
         debug("Сообщение: %s" % message)
@@ -212,7 +228,7 @@ def main():
         info("Изменений нет")  
 
     try:
-        with open('cron.db', 'w') as file:
+        with open(args.dbfile, 'w') as file:
             file.write(json.dumps(resources_link_digests, sort_keys=True, indent=4))                 
     except:
         error("Ошибка записи в файл")
