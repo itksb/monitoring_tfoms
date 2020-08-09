@@ -152,17 +152,17 @@ def is_diff_calculation_needed (filepath="cron.db"):
 def create_notification_msg (diffObject):
     result = ''
     if len(diffObject.added()) > 0:
-        result = "Добавлены: %s . " % (",".join( diffObject.added()))
+        result = "Добавлены: %s . " % (", ".join( diffObject.added()))
     if len(diffObject.changed()) > 0:
-        result += "Изменены: %s ." % (",".join( diffObject.changed()))
+        result += "Изменены: %s ." % (", ".join( diffObject.changed()))
     if len(diffObject.removed()) > 0:
-        result += "Удалены: %s ." % (",".join( diffObject.removed()))    
+        result += "Удалены: %s ." % (", ".join( diffObject.removed()))    
     
     return result
 
 
 def telegram_bot_sendtext(bot_token, bot_chatID, bot_message):
-    url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+    url = "https://api.telegram.org/bot{bot_token}/sendMessage".format(bot_token=bot_token)
     data = {'chat_id': bot_chatID, 'text': bot_message}
     response = requests.post(url, data)
     return response.json()
