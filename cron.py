@@ -10,7 +10,7 @@
 # -logfile `pwd`/cron.log \
 # -dbfile `pwd`/cron.db
 # crontab example:
-# 0 * * * *    /usr/bin/python3 /home/ksb/WebProjects/site_tfoms_monitoring/cron.py -u https://ttfoms.em70.ru/page/resheniya_komissii_po_razrabotke_territorialnoy_programmy_oms_v_tomskoy_oblasti -s class=\"page\" -e class=\"footer__metrika\" -v 3 -d "ttfoms.em70.ru" -t 1000843435:AAHiXABxF4uloK70gSzjsRwotw7yBHPU-5g -i -441527662  -logfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.log -dbfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.db  
+# 0 * * * *    /usr/bin/python3 /home/ksb/WebProjects/site_tfoms_monitoring/cron.py -u https://ttfoms.em70.ru/page/resheniya_komissii_po_razrabotke_territorialnoy_programmy_oms_v_tomskoy_oblasti -s class=\"page\" -e class=\"footer__metrika\" -v 3 -d "ttfoms.em70.ru" -t TELEGRAM_BOT_TOKEN -i TELEGRAM_CHAT_ID  -logfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.log -dbfile /home/ksb/WebProjects/site_tfoms_monitoring/cron.db  
 
 import sys
 import logging
