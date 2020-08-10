@@ -200,7 +200,7 @@ def main():
         logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=verbose[args.v], stream=sys.stdout)
     
     
-    info("Старт мониторинга изменений страницы сайта Фонда")
+    warning("Старт мониторинга изменений страницы сайта Фонда")
 
     html_page = retreive_html_page(args.u, args.s, args.e)
     links_tuple = extract_links_from_html(html_page)
@@ -222,10 +222,10 @@ def main():
         telegram_bot_sendtext(args.t, args.i, "База мониторинга пустая. Возможно первый запуск?") 
 
     if (message):
-        info("Сообщение: " + message) 
+        warning("Сообщение: " + message) 
         telegram_bot_sendtext(args.t, args.i, message) 
     else:
-        info("Изменений нет")  
+        warning("Изменений нет")  
 
     try:
         with open(args.dbfile, 'w') as file:
@@ -235,7 +235,7 @@ def main():
         telegram_bot_sendtext(args.t, args.i, "Мониторинг страницы \"Решения комиссии...\" Ошибка при сохранении базы") 
     
 
-    info("Конец программы")
+    warning("Конец программы")
     return 0
     
 
