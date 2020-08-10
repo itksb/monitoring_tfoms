@@ -122,9 +122,14 @@ def retreive_resources_digest_dict_by_links(links):
             last_modified = req.headers['last-modified']
         else: 
             last_modified = ''
-        digest = "{content_length}{last_modified}".format(content_length=content_length, last_modified=last_modified ) 
+        if 'etag' in req.headers:
+            etag = req.headers['etag']
+        else: 
+            etag = ''    
+        digest = "{content_length}{last_modified}{etag}".format(content_length=content_length, last_modified=last_modified, etag=etag ) 
         if digest:
-            res_dict[link] = hash(digest)
+            #res_dict[link] = hash(digest)
+            res_dict[link] = digest
         
     return res_dict
 
@@ -151,15 +156,50 @@ def retreive_prev_digests_if_exists(filepath="cron.db"):
 def is_diff_calculation_needed (filepath="cron.db"):
     return os.path.isfile(filepath)
 
+
+def extract_filename_from_link (link):
+    return link.rsplit('/', 1).pop()
+
 def create_notification_msg (diffObject):
     result = ''
-    if len(diffObject.added()) > 0:
-        result = "Добавлены: %s . " % (", ".join( diffObject.added()))
+
+    if len(diffObject.added()) > 0 :
+       result = "Добавлены: %s . " % (", ".join( diffObject.added()))
     if len(diffObject.changed()) > 0:
-        result += "Изменены: %s ." % (", ".join( diffObject.changed()))
+       result += "Изменены: %s ." % (", ".join( diffObject.changed()))
     if len(diffObject.removed()) > 0:
-        result += "Удалены: %s ." % (", ".join( diffObject.removed()))    
-    
+       result += "Удалены: %s ." % (", ".join( diffObject.removed())) 
+
+    MAX_MSG_LEN = 4096 
+    if  len(result) > MAX_MSG_LEN:
+        added = []
+        for link in diffObject.added():
+            link  = extract_filename_from_link (link)    
+            added.append(link)
+        changed = []
+        for link in diffObject.changed():
+            link  = extract_filename_from_link (link)    
+            changed.append(link)    
+        removed = []
+        for link in diffObject.removed():
+            link  = extract_filename_from_link (link)    
+            removed.append(link)    
+        if len(added) > 0:
+            result = "Добавлены: %s . " % (", ".join( added))
+        if len(changed) > 0:
+            result += "Изменены: %s ." % (", ".join( changed))
+        if len(removed) > 0:
+            result += "Удалены: %s ." % (", ".join( removed))
+
+    if  len(result) > MAX_MSG_LEN:
+        result = "Много изменений на сайте (либо мониторинг обсчитался). Проверьте, на всякий случай. "
+        if len(diffObject.added()) > 0 :
+            result = " Добавлены: %s. " % len(diffObject.added())
+        if len(diffObject.changed()) > 0:
+            result += " Изменены: %s." % len( diffObject.changed())
+        if len(diffObject.removed()) > 0:
+            result += " Удалены: %s." % len( diffObject.removed()) 
+   
     return result
 
 
@@ -206,9 +246,12 @@ def main():
 
     html_page = retreive_html_page(args.u, args.s, args.e)
     links_tuple = extract_links_from_html(html_page)
+    debug("Получены ссылки: %s ." % (", ".join( links_tuple)))
     links_normalized = normalize_link_urls(links_tuple, args.d)
+    debug("Ссылки нормализованы: %s ." % (", ".join( links_normalized)))
     
     resources_link_digests = retreive_resources_digest_dict_by_links(links_normalized)
+    debug("Получен словарь цифровых подписей ссылок: %s ." % ( json.dumps( links_normalized)) )
     # with open('cron2.db', 'r') as file:
     #     resources_link_digests = json.loads(file.read())
     
