@@ -115,12 +115,14 @@ def retreive_resources_digest_dict_by_links(links):
     for link in links:
         req = requests.head(link)
         if 'content-length' in req.headers:
-            content_length = req.headers['content-length']
+            content_length = req.headers['content-length'] 
+        else:
+            content_length = ''
         if 'last-modified' in req.headers:
             last_modified = req.headers['last-modified']
-        if 'etag' in req.headers:
-            etag = req.headers['etag']
-        digest = "{content_length}{last_modified}{etag}".format(content_length=content_length, last_modified=last_modified, etag=etag ) 
+        else: 
+            last_modified = ''
+        digest = "{content_length}{last_modified}".format(content_length=content_length, last_modified=last_modified ) 
         if digest:
             res_dict[link] = hash(digest)
         
@@ -232,7 +234,7 @@ def main():
             file.write(json.dumps(resources_link_digests, sort_keys=True, indent=4))                 
     except:
         error("Ошибка записи в файл")
-        telegram_bot_sendtext(args.t, args.i, "Мониторинг страницы \"Решения комиссии...\" Ошибка при сохранении базы") 
+        info(telegram_bot_sendtext(args.t, args.i, "Мониторинг страницы \"Решения комиссии...\" Ошибка при сохранении базы") )
     
 
     warning("Конец программы")
