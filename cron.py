@@ -74,20 +74,21 @@ def retreive_html_page(url, fromHtmlStr, toHtmlStr):
 
     if not url.strip():
         error("url param should not be empty")
+        return result
     req = requests.get(url)
     html = req.text
     if not html:
-        info("Retreived html page is empty")
+        error("Retreived html page is empty at all")
         return result
 
     firstOccurancePos = html.index(fromHtmlStr)
     if firstOccurancePos < 0 :
-        info("%s was not found in the site page html" % (fromHtmlStr))
+        error("%s selector was not found in the site page html" % (fromHtmlStr))
         return result
     html = html[firstOccurancePos:]
     endOccurancePos = html.index(toHtmlStr)
     if endOccurancePos < 0 :
-        info("%s was not found in the site page html" % (endOccurancePos))
+        error("%s selector was not found in the site page html" % (endOccurancePos))
         return result
     html = html[:endOccurancePos]    
     result = html
@@ -245,12 +246,21 @@ def main():
     warning("Старт мониторинга изменений страницы сайта Фонда")
 
     html_page = retreive_html_page(args.u, args.s, args.e)
+    if not len(html_page) > 0 :
+        error('Retreived html is empty')
+        sys.exit(1)
     links_tuple = extract_links_from_html(html_page)
+    if not len(links_tuple) > 0 :
+        error('Retreived links tuple is empty')
+        sys.exit(2)
     debug("Получены ссылки: %s ." % (", ".join( links_tuple)))
     links_normalized = normalize_link_urls(links_tuple, args.d)
     debug("Ссылки нормализованы: %s ." % (", ".join( links_normalized)))
     
     resources_link_digests = retreive_resources_digest_dict_by_links(links_normalized)
+    if not len(resources_link_digests) > 0 :
+        error('Словарь цифровых подписей ссылок пустой')
+        sys.exit(3)
     debug("Получен словарь цифровых подписей ссылок: %s ." % ( json.dumps( links_normalized)) )
     # with open('cron2.db', 'r') as file:
     #     resources_link_digests = json.loads(file.read())
@@ -265,7 +275,7 @@ def main():
     else:
         warning("База мониторинга пустая. Это первый запуск?")
         telegram_bot_sendtext(args.t, args.i, "База мониторинга пустая. Возможно первый запуск?") 
-
+        
     if (message):
         warning("Сообщение: " + message) 
         telegram_bot_sendtext(args.t, args.i, message) 
@@ -278,10 +288,9 @@ def main():
     except:
         error("Ошибка записи в файл")
         info(telegram_bot_sendtext(args.t, args.i, "Мониторинг страницы \"Решения комиссии...\" Ошибка при сохранении базы") )
-    
+        sys.exit(4)
 
     warning("Конец программы")
-    return 0
     
 
 if __name__ == "__main__":
