@@ -150,7 +150,7 @@ def normalize_link_urls(links_tuple, site_domain, http_schema = "https"):
 def retreive_prev_digests_if_exists(filepath="cron.db"):
     result_dict = {}
     if os.path.isfile(filepath):
-        with open('cron.db', 'r') as file:
+        with open(filepath, 'r') as file:
             result_dict = json.load(file)
     return result_dict
 
